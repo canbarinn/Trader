@@ -13,9 +13,8 @@ interface IERC20 {
 }
 
 contract SingleSwap {
-
-    address public constant routerAddress = 0xE592427A0AEce92De3Edee1F18E0157C05861564	;
-
+    address public constant routerAddress =
+        0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
     // For the scope of these swap examples,
     // we will detail the design considerations when using
@@ -35,7 +34,6 @@ contract SingleSwap {
 
     // For this example, we will set the pool fee to 0.3%.
     uint24 public constant poolFee = 3000;
-
 
     /// @notice swapExactInputSingle swaps a fixed amount of LINK for a maximum possible amount of WETH
     /// using the LINK/WETH 0.3% pool by calling `exactInputSingle` in the swap router.
@@ -65,12 +63,9 @@ contract SingleSwap {
             .ExactInputSingleParams({
                 tokenIn: LINK,
                 tokenOut: WETH,
-                fee: poolFee,
-                recipient: address(this), // ONLY FOR USING TOKENS OF CONTRACT
-                deadline: block.timestamp,
                 amountIn: amountIn,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
+                amountOutMinimum: 0
+                // sqrtPriceLimitX96: 0
             });
 
         // The call to `exactInputSingle` executes the swap.

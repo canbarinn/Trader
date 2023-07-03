@@ -1,13 +1,12 @@
-# Sample Hardhat Project
+## TODOS
+1. Impl mock swap router
+2. Write simple sanity tests for mock swap router
+    1. Deploy two mock tokens (same contract)
+    2. Deploy MockSwapRouter
+    3. Then basic tests for sanity
+3. Impl LimitTrader with at most one limit order (look at the comments)
+    1. Same as above, plus deploy LimitTrader as well
+    2. Basic tests for sanity
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+## Notes
+Can add functions to interfaces at will
