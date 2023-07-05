@@ -1,5 +1,5 @@
 {
-  "name": "singleswap",
+  "name": "trader",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,13 +9,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.9.2",
-    "@uniswap/v3-sdk": "^3.9.0",
-    "dotenv": "^16.3.1",
-    "hardhat": "^2.16.1"
-  },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0"
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@openzeppelin/contracts": "^4.9.2",
+    "hardhat": "^0.0.7"
+  },
+  "dependencies": {
+    "@uniswap/v3-sdk": "^3.8.3",
+    "bignumber.js": "^9.1.1",
+    "ethers": "5.0.0"
   }
 }
