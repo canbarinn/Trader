@@ -1,16 +1,60 @@
 import {
-  time,
   loadFixture,
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { MockToken, MockSwapRouter } from "../typechain-types";
 
-describe("Lock", function () {
+
+
+describe("MockSwapRouter", function () {
+  async function deployFixture() {
+    const [owner, ...accounts] = await ethers.getSigners();
+    const tokenFactory = await ethers.getContractFactory("MockToken");
+    const tokenA = await tokenFactory.deploy("TokenA", "A") as MockToken;
+    const tokenB = await tokenFactory.deploy("TokenB", "B") as MockToken;
+
+    const swapFactory = await ethers.getContractFactory("MockSwapRouter");
+    const swap = await swapFactory.deploy(tokenA.getAddress(), tokenB.getAddress()) as MockSwapRouter;
+
+    await tokenA.mint(owner.address, 1000);
+    await tokenA.approve(await swap.getAddress(), 1000);
+    await tokenB.mint(await swap.getAddress(), 1000);
+
+    return { swap, tokenA, tokenB, owner, accounts };
+  }
+
+  describe("Basic", async function () {
+    it("exact input", async function () {
+      const { tokenA, tokenB, swap, owner } = await loadFixture(deployFixture);
+      const exactInputSingleParams = {
+        tokenIn: await tokenA.getAddress(),
+        tokenOut: await tokenB.getAddress(),
+        fee: 3000,
+        recipient: owner.address,
+        deadline: 0,
+        amountIn: 100,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0,
+      };
+      await swap.swapExactInputSingle(exactInputSingleParams)
+
+      expect(await tokenA.balanceOf(await swap.getAddress())).to.equal(100)
+      expect(await tokenA.balanceOf(owner.address)).to.equal(900)
+      expect(await tokenB.balanceOf(await swap.getAddress())).to.equal(900)
+      expect(await tokenB.balanceOf(owner.address)).to.equal(100)
+    })
+  })
+})
+/*
+
+describe("MockSwapRouter", function () {
+  
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployOneYearLockFixture() {
+
     const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
     const ONE_GWEI = 1_000_000_000;
 
@@ -125,3 +169,5 @@ describe("Lock", function () {
     });
   });
 });
+
+*/
