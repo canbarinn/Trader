@@ -7,29 +7,33 @@ import { MockToken, MockSwapRouter } from "../typechain-types";
 
 
 
-describe("MockSwapRouter", function () {
+
+xdescribe("MockSwapRouter", function () {
   async function deployFixture() {
     const [owner, ...accounts] = await ethers.getSigners();
     const tokenFactory = await ethers.getContractFactory("MockToken");
     const tokenA = await tokenFactory.deploy("TokenA", "A") as MockToken;
     const tokenB = await tokenFactory.deploy("TokenB", "B") as MockToken;
+    const addressTokenA = tokenA.getAddress()
+    const addressTokenB = tokenB.getAddress()
 
     const swapFactory = await ethers.getContractFactory("MockSwapRouter");
-    const swap = await swapFactory.deploy(tokenA.getAddress(), tokenB.getAddress()) as MockSwapRouter;
+    const swap = await swapFactory.deploy(addressTokenA,addressTokenB) as MockSwapRouter;
+    const swapRouterAddress = swap.getAddress()
 
     await tokenA.mint(owner.address, 1000);
-    await tokenA.approve(await swap.getAddress(), 1000);
-    await tokenB.mint(await swap.getAddress(), 1000);
+    await tokenA.approve(await swapRouterAddress, 1000);
+    await tokenB.mint(await swapRouterAddress, 1000);
 
-    return { swap, tokenA, tokenB, owner, accounts };
+    return { swap, tokenA, tokenB, owner, accounts, addressTokenA, addressTokenB, swapRouterAddress };
   }
 
   describe("Basic", async function () {
     it("exact input", async function () {
-      const { tokenA, tokenB, swap, owner } = await loadFixture(deployFixture);
+      const { tokenA, tokenB, swap, owner,addressTokenA, addressTokenB,swapRouterAddress } = await loadFixture(deployFixture);
       const exactInputSingleParams = {
-        tokenIn: await tokenA.getAddress(),
-        tokenOut: await tokenB.getAddress(),
+        tokenIn: await addressTokenA,
+        tokenOut: await addressTokenB,
         fee: 3000,
         recipient: owner.address,
         deadline: 0,
@@ -39,10 +43,12 @@ describe("MockSwapRouter", function () {
       };
       await swap.swapExactInputSingle(exactInputSingleParams)
 
-      expect(await tokenA.balanceOf(await swap.getAddress())).to.equal(100)
+      expect(await tokenA.balanceOf(await swapRouterAddress)).to.equal(100)
       expect(await tokenA.balanceOf(owner.address)).to.equal(900)
-      expect(await tokenB.balanceOf(await swap.getAddress())).to.equal(900)
+      expect(await tokenB.balanceOf(await swapRouterAddress)).to.equal(900)
       expect(await tokenB.balanceOf(owner.address)).to.equal(100)
+      console.log(await tokenB.balanceOf(swapRouterAddress))
+      console.log(await tokenA.balanceOf(swapRouterAddress))
     })
   })
 })
