@@ -13,11 +13,17 @@ contract MockSwapRouter is IMockSwapRouter {
 
     address public tokenA;
     address public tokenB;
+    uint public price = 150;
 
     constructor(address _tokenA, address _tokenB) {
         tokenA = _tokenA;
         tokenB = _tokenB;
     }
+
+    function getPrice() public view returns (uint currentPrice) {
+        currentPrice = price;
+    }
+    
 
     function swapExactInputSingle(
         ISwapRouter.ExactInputSingleParams calldata params

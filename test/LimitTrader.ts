@@ -62,6 +62,7 @@ describe("MockSwapRouter", function () {
       );
 
       await limitTrader.triggerSwap(exactInputSingleParams.amountIn);
+      const price = await limitTrader.askPrice();
 
       const afterBalanceTokenBOfRouter = await tokenA.balanceOf(await swapRouterAddress);
       const afterBalanceTokenAOfRouter = await tokenA.balanceOf(await swapRouterAddress);
