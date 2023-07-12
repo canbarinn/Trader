@@ -5,7 +5,6 @@ pragma solidity ^0.8.20;
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 interface IMockSwapRouter {
-    function getPrice() external returns (uint currentPrice);
     function swapExactInputSingle(
         ISwapRouter.ExactInputSingleParams calldata params
     ) external;

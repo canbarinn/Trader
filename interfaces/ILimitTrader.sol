@@ -1,8 +1,15 @@
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 interface ILimitTrader {
+    struct LimitOrder {
+        bool active;
+        uint256 priceLimit;
+        uint256 inputAmount;
+    }
 
-    // constructor tokens, router
+    function placeBuyOrder(uint256 priceLimit, uint256 inputAmount) external;
 
-    function triggerSwap(uint256 spendAmount) external returns (uint256);
+    function processOrders() external;
+
+    function removeOrder() external;
 }

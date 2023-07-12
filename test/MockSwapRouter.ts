@@ -8,7 +8,7 @@ import { MockToken, MockSwapRouter } from "../typechain-types";
 
 
 
-xdescribe("MockSwapRouter", function () {
+describe("MockSwapRouter", function () {
   async function deployFixture() {
     const [owner, ...accounts] = await ethers.getSigners();
     const tokenFactory = await ethers.getContractFactory("MockToken");
@@ -42,13 +42,27 @@ xdescribe("MockSwapRouter", function () {
         sqrtPriceLimitX96: 0,
       };
       await swap.swapExactInputSingle(exactInputSingleParams)
-
+      
       expect(await tokenA.balanceOf(await swapRouterAddress)).to.equal(100)
       expect(await tokenA.balanceOf(owner.address)).to.equal(900)
       expect(await tokenB.balanceOf(await swapRouterAddress)).to.equal(900)
       expect(await tokenB.balanceOf(owner.address)).to.equal(100)
-      console.log(await tokenB.balanceOf(swapRouterAddress))
-      console.log(await tokenA.balanceOf(swapRouterAddress))
+
+
+      const falseExactInputSingleParams = {
+        tokenIn: await addressTokenB,
+        tokenOut: await addressTokenA,
+        fee: 3000,
+        recipient: owner.address,
+        deadline: 0,
+        amountIn: 100,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0,
+      };
+
+      await expect(swap.swapExactInputSingle(falseExactInputSingleParams)).to.revertedWith("Invalid token.");
+
+
     })
   })
 })

@@ -8,7 +8,7 @@ import "../interfaces/IMockSwapRouter.sol";
 import "../interfaces/ILimitTrader.sol";
 import "hardhat/console.sol";
 
-contract LimitTrader is ILimitTrader {
+contract LimitTrader {
     using SafeERC20 for IERC20;
 
     address public tokenA;
@@ -20,81 +20,49 @@ contract LimitTrader is ILimitTrader {
         tokenA = _tokenA;
         tokenB = _tokenB;
         swapRouter = _swapRouter;
+        limitOrder = LimitOrder(false, 0, 0);
     }
 
-    // uint256 public orderNumberCounter; // CANQ: should we use it like that?
-
-    enum AboveOrBelow {
-        Above,
-        Below
-    }
-
-    struct LimitOrders {
+    struct LimitOrder {
+        bool active;
         uint256 priceLimit;
         uint256 inputAmount;
-        AboveOrBelow direction;
     }
 
-    // mapping (uint256 => LimitOrders[]) limitOrdersMapping; // order number=>Limit order struct  // CANQ: should we use it like that?
-    LimitOrders[] limitOrdersArray; // max array length should be 10
+    LimitOrder public limitOrder;
 
     function placeBuyOrder(
         uint256 priceLimit,
-        uint256 inputAmount,
-        AboveOrBelow direction
+        uint256 inputAmount
     ) public {
-        require(limitOrdersArray.length <= 10, "You cannot place new orders!");
-        limitOrdersArray.push(LimitOrders(priceLimit, inputAmount, direction));
+        require(limitOrder.active == false, "You have to remove previous limit order first.");
+        limitOrder = LimitOrder(true, priceLimit, inputAmount);
     }
 
     function processOrders() public {
-        uint256 price = askPrice();
-        for (uint256 i = 0; i < limitOrdersArray.length; i++) {
-            if (
-                uint(limitOrdersArray[i].direction) == 0 &&
-                price > limitOrdersArray[i].priceLimit
-            ) {
-                triggerSwap(limitOrdersArray[i].inputAmount);
-                removeOrder(i);
-            } else if (
-                uint(limitOrdersArray[i].direction) == 1 &&
-                price < limitOrdersArray[i].priceLimit
-            ) {
-                triggerSwap(limitOrdersArray[i].inputAmount);
-                removeOrder(i);
-            } 
-        }
+            require(limitOrder.active == true, "You do not have any limit order.");
+            IERC20(tokenA).safeApprove(swapRouter, limitOrder.inputAmount);
+            IMockSwapRouter(swapRouter).swapExactInputSingle(
+                ISwapRouter.ExactInputSingleParams(
+                    tokenA,
+                    tokenB,
+                    0,
+                    address(this),
+                    0,
+                    limitOrder.inputAmount,
+                    0,
+                    0
+                )
+            );
+            limitOrder = LimitOrder(false, 0, 0);
+        
+
     }
 
-    function removeOrder(uint256 index) public {
-        for (uint256 i = index; i < limitOrdersArray.length - 1; i++) {
-            limitOrdersArray[i] = limitOrdersArray[i + 1];
-        }
-        limitOrdersArray.pop();
+    function removeOrder() public {
+        limitOrder = LimitOrder(false, 0, 0);
     }
 
+    // PRICE SHOULD RETURN 2 UINTS TO INDICATE THE RELATIONSHIP BETWEEN 2 TOKENS
 
-    function askPrice() public returns (uint price) {
-        price = IMockSwapRouter(swapRouter).getPrice();
-        console.log("CURRENT PRICE: ", price);
-    }
-
-    function triggerSwap(uint256 spendAmount) public returns (uint256) {
-        // CANQ: ne return edebilirim?
-
-        IERC20(tokenA).safeApprove(swapRouter, spendAmount);
-
-        IMockSwapRouter(swapRouter).swapExactInputSingle(
-            ISwapRouter.ExactInputSingleParams(
-                tokenA,
-                tokenB,
-                0,
-                address(this),
-                0,
-                spendAmount,
-                0,
-                0
-            )
-        );
-    }
 }
