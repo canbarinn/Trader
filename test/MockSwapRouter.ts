@@ -1,25 +1,20 @@
-import {
-  loadFixture,
-} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { MockToken, MockSwapRouter } from "../typechain-types";
-
-
-
 
 describe("MockSwapRouter", function () {
   async function deployFixture() {
     const [owner, ...accounts] = await ethers.getSigners();
     const tokenFactory = await ethers.getContractFactory("MockToken");
-    const tokenA = await tokenFactory.deploy("TokenA", "A") as MockToken;
-    const tokenB = await tokenFactory.deploy("TokenB", "B") as MockToken;
-    const addressTokenA = tokenA.getAddress()
-    const addressTokenB = tokenB.getAddress()
+    const tokenA = (await tokenFactory.deploy("TokenA", "A")) as MockToken;
+    const tokenB = (await tokenFactory.deploy("TokenB", "B")) as MockToken;
+    const addressTokenA = tokenA.getAddress();
+    const addressTokenB = tokenB.getAddress();
 
     const swapFactory = await ethers.getContractFactory("MockSwapRouter");
-    const swap = await swapFactory.deploy(addressTokenA,addressTokenB) as MockSwapRouter;
-    const swapRouterAddress = swap.getAddress()
+    const swap = (await swapFactory.deploy(addressTokenA, addressTokenB)) as MockSwapRouter;
+    const swapRouterAddress = swap.getAddress();
 
     await tokenA.mint(owner.address, 1000);
     await tokenA.approve(await swapRouterAddress, 1000);
@@ -30,7 +25,7 @@ describe("MockSwapRouter", function () {
 
   describe("Basic", async function () {
     it("exact input", async function () {
-      const { tokenA, tokenB, swap, owner,addressTokenA, addressTokenB,swapRouterAddress } = await loadFixture(deployFixture);
+      const { tokenA, tokenB, swap, owner, addressTokenA, addressTokenB, swapRouterAddress } = await loadFixture(deployFixture);
       const exactInputSingleParams = {
         tokenIn: await addressTokenA,
         tokenOut: await addressTokenB,
@@ -41,13 +36,12 @@ describe("MockSwapRouter", function () {
         amountOutMinimum: 0,
         sqrtPriceLimitX96: 0,
       };
-      await swap.swapExactInputSingle(exactInputSingleParams)
-      
-      expect(await tokenA.balanceOf(await swapRouterAddress)).to.equal(100)
-      expect(await tokenA.balanceOf(owner.address)).to.equal(900)
-      expect(await tokenB.balanceOf(await swapRouterAddress)).to.equal(900)
-      expect(await tokenB.balanceOf(owner.address)).to.equal(100)
+      await swap.swapExactInputSingle(exactInputSingleParams);
 
+      expect(await tokenA.balanceOf(await swapRouterAddress)).to.equal(100);
+      expect(await tokenA.balanceOf(owner.address)).to.equal(900);
+      expect(await tokenB.balanceOf(await swapRouterAddress)).to.equal(900);
+      expect(await tokenB.balanceOf(owner.address)).to.equal(100);
 
       const falseExactInputSingleParams = {
         tokenIn: await addressTokenB,
@@ -61,11 +55,9 @@ describe("MockSwapRouter", function () {
       };
 
       await expect(swap.swapExactInputSingle(falseExactInputSingleParams)).to.revertedWith("Invalid token.");
-
-
-    })
-  })
-})
+    });
+  });
+});
 /*
 
 describe("MockSwapRouter", function () {

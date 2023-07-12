@@ -14,8 +14,7 @@ contract LimitTrader {
     address public tokenA;
     address public tokenB;
     address public swapRouter;
-    
-    
+
     constructor(address _tokenA, address _tokenB, address _swapRouter) {
         tokenA = _tokenA;
         tokenB = _tokenB;
@@ -31,32 +30,30 @@ contract LimitTrader {
 
     LimitOrder public limitOrder;
 
-    function placeBuyOrder(
-        uint256 priceLimit,
-        uint256 inputAmount
-    ) public {
-        require(limitOrder.active == false, "You have to remove previous limit order first.");
+    function placeBuyOrder(uint256 priceLimit, uint256 inputAmount) public {
+        require(
+            limitOrder.active == false,
+            "You have to remove previous limit order first."
+        );
         limitOrder = LimitOrder(true, priceLimit, inputAmount);
     }
 
-    function processOrders() public {
-            require(limitOrder.active == true, "You do not have any limit order.");
-            IERC20(tokenA).safeApprove(swapRouter, limitOrder.inputAmount);
-            IMockSwapRouter(swapRouter).swapExactInputSingle(
-                ISwapRouter.ExactInputSingleParams(
-                    tokenA,
-                    tokenB,
-                    0,
-                    address(this),
-                    0,
-                    limitOrder.inputAmount,
-                    0,
-                    0
-                )
-            );
-            limitOrder = LimitOrder(false, 0, 0);
-        
-
+    function processOrder() public {
+        require(limitOrder.active == true, "You do not have any limit order.");
+        IERC20(tokenA).safeApprove(swapRouter, limitOrder.inputAmount);
+        IMockSwapRouter(swapRouter).swapExactInputSingle(
+            ISwapRouter.ExactInputSingleParams(
+                tokenA,
+                tokenB,
+                0,
+                address(this),
+                0,
+                limitOrder.inputAmount,
+                0,
+                0
+            )
+        );
+        limitOrder = LimitOrder(false, 0, 0);
     }
 
     function removeOrder() public {
@@ -64,5 +61,4 @@ contract LimitTrader {
     }
 
     // PRICE SHOULD RETURN 2 UINTS TO INDICATE THE RELATIONSHIP BETWEEN 2 TOKENS
-
 }

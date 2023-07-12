@@ -13,7 +13,6 @@ contract MockSwapRouter is IMockSwapRouter {
 
     address public tokenA;
     address public tokenB;
-    uint public price = 150;
 
     constructor(address _tokenA, address _tokenB) {
         tokenA = _tokenA;
@@ -23,7 +22,10 @@ contract MockSwapRouter is IMockSwapRouter {
     function swapExactInputSingle(
         ISwapRouter.ExactInputSingleParams calldata params
     ) external {
-        require(params.tokenIn == tokenA || params.tokenOut == tokenB, "Invalid token.");
+        require(
+            params.tokenIn == tokenA || params.tokenOut == tokenB,
+            "Invalid token."
+        );
         IERC20(tokenA).safeTransferFrom(
             msg.sender,
             address(this),

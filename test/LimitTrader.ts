@@ -25,11 +25,10 @@ describe("LimitTrader", function () {
   }
 
   describe("Functions", async function () {
-    it("place limit order, process it, and remove it", async function () {
-      const { tokenA, tokenB, limitTrader,swapRouterAddress, limitTraderAddress } = await loadFixture(deployFixture);
+    it("empty limit order", async function () {
+      const { tokenA, tokenB, limitTrader, swapRouterAddress, limitTraderAddress } = await loadFixture(deployFixture);
       const swapAmountIn = 100;
       const priceLimit = 0;
-
       await tokenA.mint(limitTraderAddress, 1000);
 
       expect(await tokenA.balanceOf(await swapRouterAddress)).to.equal(0);
@@ -38,19 +37,31 @@ describe("LimitTrader", function () {
       expect(await tokenB.balanceOf(await limitTraderAddress)).to.equal(0);
 
       await limitTrader.placeBuyOrder(priceLimit, swapAmountIn);
-      await limitTrader.processOrders();
+      await limitTrader.processOrder();
 
       expect(await tokenA.balanceOf(await swapRouterAddress)).to.equal(100);
       expect(await tokenA.balanceOf(await limitTraderAddress)).to.equal(900);
       expect(await tokenB.balanceOf(await swapRouterAddress)).to.equal(900);
       expect(await tokenB.balanceOf(await limitTraderAddress)).to.equal(100);
+    });
+    it("place/remove limit order", async function () {
+      const { tokenA, limitTrader, limitTraderAddress } = await loadFixture(deployFixture);
+      const swapAmountIn = 100;
+      const priceLimit = 0;
+      await tokenA.mint(limitTraderAddress, 1000);
 
-      await expect(limitTrader.processOrders()).to.revertedWith("You do not have any limit order.");
+      await limitTrader.placeBuyOrder(priceLimit, swapAmountIn);
+      expect(await limitTrader.processOrder()).to.not.reverted;
 
       await limitTrader.placeBuyOrder(priceLimit, swapAmountIn);
       await limitTrader.removeOrder();
 
-      await expect(limitTrader.processOrders()).to.revertedWith("You do not have any limit order.");
+      await expect(limitTrader.processOrder()).to.revertedWith("You do not have any limit order.");
+    });
+    it("empty limit order", async function () {
+      const { limitTrader } = await loadFixture(deployFixture);
+
+      await expect(limitTrader.processOrder()).to.revertedWith("You do not have any limit order.");
     });
   });
 });
