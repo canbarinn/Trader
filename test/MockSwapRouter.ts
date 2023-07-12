@@ -1,16 +1,72 @@
-import {
-  time,
-  loadFixture,
-} from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { MockToken, MockSwapRouter } from "../typechain-types";
 
-describe("Lock", function () {
+describe("MockSwapRouter", function () {
+  async function deployFixture() {
+    const [owner, ...accounts] = await ethers.getSigners();
+    const tokenFactory = await ethers.getContractFactory("MockToken");
+    const tokenA = (await tokenFactory.deploy("TokenA", "A")) as MockToken;
+    const tokenB = (await tokenFactory.deploy("TokenB", "B")) as MockToken;
+    const addressTokenA = tokenA.getAddress();
+    const addressTokenB = tokenB.getAddress();
+
+    const swapFactory = await ethers.getContractFactory("MockSwapRouter");
+    const swap = (await swapFactory.deploy(addressTokenA, addressTokenB)) as MockSwapRouter;
+    const swapRouterAddress = swap.getAddress();
+
+    await tokenA.mint(owner.address, 1000);
+    await tokenA.approve(await swapRouterAddress, 1000);
+    await tokenB.mint(await swapRouterAddress, 1000);
+
+    return { swap, tokenA, tokenB, owner, accounts, addressTokenA, addressTokenB, swapRouterAddress };
+  }
+
+  describe("Basic", async function () {
+    it("exact input", async function () {
+      const { tokenA, tokenB, swap, owner, addressTokenA, addressTokenB, swapRouterAddress } = await loadFixture(deployFixture);
+      const exactInputSingleParams = {
+        tokenIn: await addressTokenA,
+        tokenOut: await addressTokenB,
+        fee: 3000,
+        recipient: owner.address,
+        deadline: 0,
+        amountIn: 100,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0,
+      };
+      await swap.swapExactInputSingle(exactInputSingleParams);
+
+      expect(await tokenA.balanceOf(await swapRouterAddress)).to.equal(100);
+      expect(await tokenA.balanceOf(owner.address)).to.equal(900);
+      expect(await tokenB.balanceOf(await swapRouterAddress)).to.equal(900);
+      expect(await tokenB.balanceOf(owner.address)).to.equal(100);
+
+      const falseExactInputSingleParams = {
+        tokenIn: await addressTokenB,
+        tokenOut: await addressTokenA,
+        fee: 3000,
+        recipient: owner.address,
+        deadline: 0,
+        amountIn: 100,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0,
+      };
+
+      await expect(swap.swapExactInputSingle(falseExactInputSingleParams)).to.revertedWith("Invalid token.");
+    });
+  });
+});
+/*
+
+describe("MockSwapRouter", function () {
+  
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployOneYearLockFixture() {
+
     const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
     const ONE_GWEI = 1_000_000_000;
 
@@ -125,3 +181,5 @@ describe("Lock", function () {
     });
   });
 });
+
+*/

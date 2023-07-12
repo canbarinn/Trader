@@ -1,29 +1,39 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity ^0.8.0;
+pragma abicoder v2;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/IMockSwapRouter.sol";
+
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
-contract MockSwapRouter {
-    address public tokenA; // change address type to MockToken IERC20 type
-    address public tokenB;
+contract MockSwapRouter is IMockSwapRouter {
+    using SafeERC20 for IERC20;
 
-    // .... public price; // can change with a function call
+    address public tokenA;
+    address public tokenB;
 
     constructor(address _tokenA, address _tokenB) {
         tokenA = _tokenA;
         tokenB = _tokenB;
-        // set price
     }
 
-    // can withdraw tokens from contract
-
-    // can change price
-
-    function exactOutputSingle(
-        ISwapRouter.ExactOutputSingleParams calldata params
-    ) external returns (uint256 amountIn) {
-        // transfer A in
-        // send B out
-    }
-
-    function exactInputSingle(
+    function swapExactInputSingle(
         ISwapRouter.ExactInputSingleParams calldata params
-    ) external returns (uint256 amountOut) {}
+    ) external {
+        require(
+            params.tokenIn == tokenA || params.tokenOut == tokenB,
+            "Invalid token."
+        );
+        IERC20(tokenA).safeTransferFrom(
+            msg.sender,
+            address(this),
+            params.amountIn
+        );
+
+        IERC20(tokenB).safeTransfer(msg.sender, params.amountIn);
+    }
+
+    // function swapExactOutputSingle
 }

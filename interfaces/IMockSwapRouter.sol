@@ -1,14 +1,11 @@
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-
+pragma solidity ^0.8.20;
 // import IERC20 from openzeppelin, do not write yourself
 // You will write MockToken using it, in a separate file and contract
 
-interface IMockSwapRouter {
-    function exactOutputSingle(
-        ISwapRouter.ExactOutputSingleParams calldata params
-    ) external returns (uint256 amountIn);
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
-    function exactInputSingle(
+interface IMockSwapRouter {
+    function swapExactInputSingle(
         ISwapRouter.ExactInputSingleParams calldata params
-    ) external returns (uint256 amountOut);
+    ) external;
 }
