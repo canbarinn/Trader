@@ -25,7 +25,7 @@ describe("LimitTrader", function () {
   }
 
   describe("Functions", async function () {
-    it("empty limit order", async function () {
+    it("limit order processing is correct", async function () {
       const { tokenA, tokenB, limitTrader, swapRouterAddress, limitTraderAddress } = await loadFixture(deployFixture);
       const swapAmountIn = 100;
       const priceLimit = 0;
